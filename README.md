@@ -1,3 +1,16 @@
+# Usage
+1. add the following line to `go.mod`
+```
+replace bitbucket.org/avd/go-ipc => github.com/x51ming/go-ipc latest
+```
+2. run `go mod tidy`
+
+# Changes
+1. fix `thread_darwin.go` on latest macos
+2. fix `lwmutex` to pass tests `TestMutexValueInc` and `TestSpinMutexValueInc`
+
+----
+
 # go-ipc: A library for inter-process communication written in pure Go.
 This package gives you access to os-native ipc mechanisms on Linux, OSX, FreeBSD, and Windows.
 
