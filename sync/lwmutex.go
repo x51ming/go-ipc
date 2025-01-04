@@ -77,22 +77,11 @@ func (lwm *lwMutex) doLock(timeout time.Duration) error {
 }
 
 func (lwm *lwMutex) unlock() {
-	if old := atomic.LoadInt32(lwm.state); old == lwmLockedHaveWaiters {
-		*lwm.state = lwmUnlocked
-	} else {
-		if old == lwmUnlocked {
-			panic("unlock of unlocked mutex")
-		}
-		if atomic.SwapInt32(lwm.state, lwmUnlocked) == lwmLockedNoWaiters {
-			return
-		}
+	old := atomic.SwapInt32(lwm.state, lwmUnlocked)
+	if old == lwmUnlocked {
+		panic("unlock of unlocked mutex")
 	}
-	for i := 0; i < lwmSpinCount; i++ {
-		if *lwm.state != lwmUnlocked {
-			if atomic.CompareAndSwapInt32(lwm.state, lwmLockedNoWaiters, lwmLockedHaveWaiters) {
-				return
-			}
-		}
+	if old == lwmLockedHaveWaiters {
+		lwm.ww.wake(1)
 	}
-	lwm.ww.wake(1)
 }
